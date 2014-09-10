@@ -26,8 +26,12 @@ namespace DmitryNovik.Mi9.Lib.Services
             {
                 return new ShowResponse() 
                 { 
-                    response = request.payload.Where(s => predicate(s))
-                        .Select(s => new ShowInResponse() { image = s.image.showImage, slug = s.slug, title = s.title })
+                    response = request.payload.Where(predicate)
+                        .Select(s => new ShowInResponse() { 
+                            image = s.image.showImage, 
+                            slug = s.slug, 
+                            title = s.title 
+                        })
                 };
             }
             catch (Exception)
