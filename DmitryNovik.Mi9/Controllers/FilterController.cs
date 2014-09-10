@@ -18,7 +18,7 @@ namespace DmitryNovik.Mi9.Controllers
         public ActionResult FilterShows()
         {
             Response.StatusCode = BAD_REQUEST;
-            return Json("Get not allowed", JsonRequestBehavior.AllowGet);
+            return Json("Please use HTTP POST for shows processing", JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
