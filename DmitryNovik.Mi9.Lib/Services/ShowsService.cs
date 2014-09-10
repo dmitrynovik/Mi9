@@ -7,13 +7,12 @@ using System.Linq;
 
 namespace DmitryNovik.Mi9.Lib.Services
 {
-    public class ShowsDrmEpisodesFilterService : IShowsFilterService
+    public class ShowsService
     {
-        private readonly JsonSerializer _serializer;
+        private static readonly JsonSerializer _serializer;
 
-        public ShowsDrmEpisodesFilterService()
+        static ShowsService()
         {
-            // Ignore nulls:
             _serializer = JsonSerializer.Create(new JsonSerializerSettings()
             {
                 NullValueHandling = NullValueHandling.Ignore,
@@ -21,35 +20,42 @@ namespace DmitryNovik.Mi9.Lib.Services
             });
         }
 
-        public JsonSerializer Serializer
-        {
-            get
-            {
-                return _serializer;
-            }
-        }
-
-        public string Filter(ShowRequest request, out string error)
+        public ShowResponse Filter(ShowRequest request, Func<ShowInRequest, bool> predicate)
         {
             try
             {
-                var response = new ShowResponse() 
+                return new ShowResponse() 
                 { 
-                    response = request.payload.Where(s => s.drm && s.episodeCount > 0)
+                    response = request.payload.Where(s => predicate(s))
                         .Select(s => new ShowInResponse() { image = s.image.showImage, slug = s.slug, title = s.title })
                 };
-                error = null;
-                return Serialize(response);
             }
             catch (Exception)
             {
                 // TODO: Log or otherwise process the Error
-                error = "Could not decode request: JSON parsing failed";
-                return Serialize(new ShowResponse() { error = error });
+                return ShowResponse.Invalid();
             }
         }
 
-        private string Serialize(ShowResponse response)
+        public ShowResponse Filter(Stream requestStream, Func<ShowInRequest, bool> predicate)
+        {
+            return Filter(Deserialize(requestStream), predicate);
+        }
+
+        private static ShowRequest Deserialize(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var sRequest = reader.ReadToEnd();
+                using (var stringReader = new StringReader(sRequest))
+                using (var jsonReader = new JsonTextReader(stringReader))
+                {
+                    return _serializer.Deserialize<ShowRequest>(jsonReader);
+                }
+            }
+        }
+
+        public static string Serialize(ShowResponse response)
         {
             using (var writer = new StringWriter())
             using (var jsonWriter = new JsonTextWriter(writer))

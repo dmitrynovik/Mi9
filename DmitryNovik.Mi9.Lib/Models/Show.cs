@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace DmitryNovik.Mi9.Lib.Models
 {
@@ -24,5 +25,21 @@ namespace DmitryNovik.Mi9.Lib.Models
         public bool drm { get; set; }
         public int episodeCount { get; set; }
         public ShowImage image { get; set; }
+    }
+
+    public class ShowRequest
+    {
+        public IEnumerable<ShowInRequest> payload { get; set; }
+    }
+
+    public class ShowResponse
+    {
+        public IEnumerable<ShowInResponse> response { get; set; }
+        public string error { get; set; }
+
+        public static ShowResponse Invalid()
+        {
+            return new ShowResponse() { error = "Could not decode request: JSON parsing failed" };
+        }
     }
 }

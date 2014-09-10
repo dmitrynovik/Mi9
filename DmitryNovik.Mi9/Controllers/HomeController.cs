@@ -1,4 +1,5 @@
-﻿using DmitryNovik.Mi9.Lib.Services;
+﻿using DmitryNovik.Mi9.Lib.Models;
+using DmitryNovik.Mi9.Lib.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,8 @@ namespace DmitryNovik.Mi9.Controllers
     public class HomeController : Controller
     {
         const int BAD_REQUEST = 400;
-        private readonly IShowsFilterService _filter = new ShowsDrmEpisodesFilterService();
+        private readonly ShowsService _filter = new ShowsService();
 
-        // 
         public ActionResult Index()
         {
             Response.StatusCode = BAD_REQUEST;
@@ -24,40 +24,33 @@ namespace DmitryNovik.Mi9.Controllers
         [HttpPost]
         public ActionResult Index(string sRequest)
         {
-            var request = Deserialize(_filter.Serializer);
+            // Cannot rely on .NET MVC serializer as it converts a valid empty array (a valid schema!) into NULL,
+            // use low-level input stream instead of model:
+            Request.InputStream.Seek(0, SeekOrigin.Begin);
 
-            string error;
-            var response = _filter.Filter(request, out error);
-            if (!string.IsNullOrWhiteSpace(error))
+            var response = _filter.Filter(Request.InputStream, s => s.drm && s.episodeCount > 0);
+            if (!string.IsNullOrWhiteSpace(response.error))
             {
                 Response.StatusCode = BAD_REQUEST;
             }
-            return new ContentResult() { Content = response, ContentType = "application/json" };
+            return Serialize(response);
         }
 
-        /// <summary>
-        /// Cannot rely on .NET MVC as it converts a valid empty array (a valid schema!) into NULL:
-        /// </summary>
-        private ShowRequest Deserialize(JsonSerializer _serializer)
+        private ActionResult Serialize(ShowResponse response)
         {
-            Request.InputStream.Seek(0, SeekOrigin.Begin);
-
-            using (var reader = new StreamReader(Request.InputStream))
+            // Use Json.Net's serializer instead of ASP.NET MVC one
+            return new ContentResult()
             {
-                var sRequest = reader.ReadToEnd();
-                using (var stringReader = new StringReader(sRequest))
-                using (var jsonReader = new JsonTextReader(stringReader))
-                {
-                    return _serializer.Deserialize<ShowRequest>(jsonReader);
-                }
-            }
+                ContentType = "application/json",
+                Content = ShowsService.Serialize(response)
+            };
         }
 
         protected override void OnException(ExceptionContext filterContext)
         {
             filterContext.ExceptionHandled = true;
             Response.StatusCode = BAD_REQUEST;
-            filterContext.Result = Json(new { error = "Could not decode request: JSON parsing failed" });
+            filterContext.Result = Serialize(ShowResponse.Invalid());
         }
     }
 }
