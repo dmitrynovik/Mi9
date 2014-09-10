@@ -10,19 +10,19 @@ using System.Web.Mvc;
 
 namespace DmitryNovik.Mi9.Controllers
 {
-    public class HomeController : Controller
+    public class FilterController : Controller
     {
         const int BAD_REQUEST = 400;
-        private readonly ShowsService _filter = new ShowsService();
+        private readonly ShowsFilterService _filter = new ShowsFilterService();
 
-        public ActionResult Index()
+        public ActionResult FilterShows()
         {
             Response.StatusCode = BAD_REQUEST;
             return Json("Get not allowed", JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
-        public ActionResult Index(string sRequest)
+        public ActionResult FilterShows(string sRequest)
         {
             // Cannot rely on .NET MVC serializer as it converts a valid empty array (a valid schema!) into NULL,
             // use low-level input stream instead of model:
@@ -42,7 +42,7 @@ namespace DmitryNovik.Mi9.Controllers
             return new ContentResult()
             {
                 ContentType = "application/json",
-                Content = ShowsService.Serialize(response)
+                Content = ShowsFilterService.Serialize(response)
             };
         }
 

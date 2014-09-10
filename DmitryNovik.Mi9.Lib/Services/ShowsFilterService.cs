@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace DmitryNovik.Mi9.Lib.Services
 {
-    public class ShowsService
+    public class ShowsFilterService
     {
         private static readonly JsonSerializer _serializer;
 
-        static ShowsService()
+        static ShowsFilterService()
         {
             _serializer = JsonSerializer.Create(new JsonSerializerSettings()
             {

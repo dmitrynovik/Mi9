@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="Models\Show.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\ShowsService.cs" />
+    <Compile Include="Services\ShowsFilterService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
