@@ -1,4 +1,5 @@
 ﻿using DmitryNovik.Mi9.Lib.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,22 +22,42 @@ namespace DmitryNovik.Mi9.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(ShowRequest request)
+        public string Index(string sRequest)
         {
+            var request = Deserialize(_filter.Serializer);
+
             string error;
             var response = _filter.Filter(request, out error);
             if (!string.IsNullOrWhiteSpace(error))
             {
                 Response.StatusCode = BAD_REQUEST;
             }
-            return new ContentResult() { Content = response, ContentType = "application/json" };
+            return response;
+        }
+
+        /// <summary>
+        /// Cannot rely on .NET MVC as it converts a valid empty array (a valid schema!) into NULL:
+        /// </summary>
+        private ShowRequest Deserialize(JsonSerializer _serializer)
+        {
+            Request.InputStream.Seek(0, SeekOrigin.Begin);
+
+            using (var reader = new StreamReader(Request.InputStream))
+            {
+                var sRequest = reader.ReadToEnd();
+                using (var stringReader = new StringReader(sRequest))
+                using (var jsonReader = new JsonTextReader(stringReader))
+                {
+                    return _serializer.Deserialize<ShowRequest>(jsonReader);
+                }
+            }
         }
 
         protected override void OnException(ExceptionContext filterContext)
         {
             filterContext.ExceptionHandled = true;
             Response.StatusCode = BAD_REQUEST;
-            filterContext.Result = Index(null);
+            filterContext.Result = Json(new { error = "Could not parse JSON" });
         }
     }
 }

@@ -6,11 +6,6 @@ namespace DmitryNovik.Mi9.Lib.Services
 {
     public class ShowRequest
     {
-        //public ShowRequest()
-        //{
-        //    payload = new List<ShowInRequest>(0);
-        //}
-
         public IEnumerable<ShowInRequest> payload { get; set; }
     }
 }

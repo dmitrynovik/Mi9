@@ -21,6 +21,14 @@ namespace DmitryNovik.Mi9.Lib.Services
             });
         }
 
+        public JsonSerializer Serializer
+        {
+            get
+            {
+                return _serializer;
+            }
+        }
+
         public string Filter(ShowRequest request, out string error)
         {
             try
