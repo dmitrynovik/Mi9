@@ -22,7 +22,7 @@ namespace DmitryNovik.Mi9.Controllers
         }
 
         [HttpPost]
-        public string Index(string sRequest)
+        public ActionResult Index(string sRequest)
         {
             var request = Deserialize(_filter.Serializer);
 
@@ -32,7 +32,7 @@ namespace DmitryNovik.Mi9.Controllers
             {
                 Response.StatusCode = BAD_REQUEST;
             }
-            return response;
+            return new ContentResult() { Content = response, ContentType = "application/json" };
         }
 
         /// <summary>
