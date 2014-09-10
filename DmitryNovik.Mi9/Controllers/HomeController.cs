@@ -57,7 +57,7 @@ namespace DmitryNovik.Mi9.Controllers
         {
             filterContext.ExceptionHandled = true;
             Response.StatusCode = BAD_REQUEST;
-            filterContext.Result = Json(new { error = "Could not parse JSON" });
+            filterContext.Result = Json(new { error = "Could not decode request: JSON parsing failed" });
         }
     }
 }
