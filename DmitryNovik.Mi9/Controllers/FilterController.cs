@@ -13,7 +13,8 @@ namespace DmitryNovik.Mi9.Controllers
     public class FilterController : Controller
     {
         const int BAD_REQUEST = 400;
-        private readonly ShowsFilterService _filter = new ShowsFilterService();
+        // A point to use DI instead:
+        private readonly ShowsFilterService _filter = new EpisodeDrmFilterService();
 
         public ActionResult FilterShows()
         {
@@ -28,7 +29,7 @@ namespace DmitryNovik.Mi9.Controllers
             // use low-level input stream instead of model:
             Request.InputStream.Seek(0, SeekOrigin.Begin);
 
-            var response = _filter.Filter(Request.InputStream, s => s.drm && s.episodeCount > 0);
+            var response = _filter.Filter(Request.InputStream);
             if (!string.IsNullOrWhiteSpace(response.error))
             {
                 Response.StatusCode = BAD_REQUEST;

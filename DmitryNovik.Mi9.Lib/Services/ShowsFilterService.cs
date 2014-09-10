@@ -7,9 +7,11 @@ using System.Linq;
 
 namespace DmitryNovik.Mi9.Lib.Services
 {
-    public class ShowsFilterService
+    public abstract class ShowsFilterService
     {
         private static readonly JsonSerializer _serializer;
+
+        protected abstract Func<ShowInRequest, bool> Predicate { get; }
 
         static ShowsFilterService()
         {
@@ -20,33 +22,40 @@ namespace DmitryNovik.Mi9.Lib.Services
             });
         }
 
-        public ShowResponse Filter(ShowRequest request, Func<ShowInRequest, bool> predicate)
+        public ShowResponse Filter(ShowRequest request)
         {
-            try
+            if (request != null && request.payload != null)
             {
                 return new ShowResponse() 
                 { 
-                    response = request.payload.Where(predicate)
-                        .Select(s => new ShowInResponse() { 
+                    response = request.payload.Where(Predicate).Select(s => new ShowInResponse() { 
                             image = s.image.showImage, 
                             slug = s.slug, 
                             title = s.title 
                         })
                 };
             }
-            catch (Exception)
+            else
             {
-                // TODO: Log or otherwise process the Error
                 return ShowResponse.Invalid();
             }
         }
 
-        public ShowResponse Filter(Stream requestStream, Func<ShowInRequest, bool> predicate)
+        public ShowResponse Filter(Stream requestStream)
         {
-            return Filter(Deserialize(requestStream), predicate);
+            // Might be invalid JSON (wrap in try / catch)
+            try
+            {
+                return Filter(Deserialize(requestStream));
+            }
+            catch (Exception)
+            {
+                // TODO: Log or otherwise process the Error
+                return ShowResponse.Invalid();
+            }            
         }
 
-        private static ShowRequest Deserialize(Stream stream)
+        public static ShowRequest Deserialize(Stream stream)
         {
             using (var reader = new StreamReader(stream))
             {
