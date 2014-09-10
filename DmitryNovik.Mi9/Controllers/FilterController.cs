@@ -38,7 +38,7 @@ namespace DmitryNovik.Mi9.Controllers
 
         private ActionResult Serialize(ShowResponse response)
         {
-            // Use Json.Net's serializer instead of ASP.NET MVC one
+            // Use Json.Net's serializer instead of ASP.NET MVC one (gives more control on output)
             return new ContentResult()
             {
                 ContentType = "application/json",
