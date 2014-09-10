@@ -36,7 +36,7 @@ namespace DmitryNovik.Mi9.Lib.Services
                 var response = new ShowResponse() 
                 { 
                     response = request.payload.Where(s => s.drm && s.episodeCount > 0)
-                        .Select(s => new ShowInResponse() { image = s.image, slug = s.slug, title = s.title })
+                        .Select(s => new ShowInResponse() { image = s.image.showImage, slug = s.slug, title = s.title })
                 };
                 error = null;
                 return Serialize(response);
